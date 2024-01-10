@@ -3,6 +3,7 @@
 
 #include <QMainWindow>
 #include <QJSEngine>
+#include<QLabel>
 #include "biaozhun.h"
 #include "kexue.h"
 #include "riqi.h"
@@ -21,11 +22,12 @@ class MainWindow : public QMainWindow
 public:
     explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
-
+   QLabel* createTabLabel(const QString& text);
 
 private:
     Ui::MainWindow *ui;
 
+    bool tabsHidden;
     biaozhun *biaozhunView;
     kexue *kexueView;
 };

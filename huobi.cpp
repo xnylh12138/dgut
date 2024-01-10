@@ -4,55 +4,33 @@
 #include <QJsonArray>
 #include <QJsonObject>
 
+#include "huobi.h"
+#include "ui_huobi.h"
+#include <QJsonDocument>
+#include <QJsonArray>
+#include <QJsonObject>
+
 huobi::huobi(QWidget *parent) :
     QWidget(parent),
     ui(new Ui::huobi)
 {
     ui->setupUi(this);
 
-    QNetworkAccessManager* m_manager = new QNetworkAccessManager;
-    QNetworkRequest request; request.setUrl(QUrl(QString("http://121.37.239.127:25562/Cash")));
-    m_manager->get(request);//向网页发起get请求
-    connect(m_manager, SIGNAL(finished(QNetworkReply*)), this,SLOT(dealMsg(QNetworkReply*)));//请求完成,获取数据并在槽函数中进行处理
+    exchangeRates = {
+        {"CNY", 1.0}, // Adding CNY as the base currency
+        {"USD", 0.1572},
+        {"EUR", 0.1325},
+        {"GBP", 0.1200},
+        {"JPY", 17.23},
+        {"CAD", 0.2000}
+        // Add more currencies and their rates
+    };
 
+    connect(ui->doubleSpinBox, SIGNAL(valueChanged(const QString&)), this, SLOT(on_doubleSpinBox_valueChanged(const QString&)));
+    connect(ui->comboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(on_comboBox_currentIndexChanged(int)));
+    connect(ui->comboBox_2, SIGNAL(currentIndexChanged(int)), this, SLOT(on_comboBox_2_currentIndexChanged(int)));
 
-}
-
-void huobi::dealMsg(QNetworkReply * reply)//对数据进行解析
-{
-    QByteArray array = reply->readAll();
-    QJsonParseError error;
-    QJsonDocument data = QJsonDocument::fromJson(array, &error);
-    ui->comboBox->clear();
-    ui->comboBox_2->clear();
-    if (!data.isNull()) {
-      QJsonArray list = data.array();
-      for (int var = 0; var < list.size(); ++var) {
-          QJsonValue value = list.at(var);
-          QJsonObject obj = value.toObject();
-          QString res1 = obj.take("name").toString();
-          QString res2 = obj.take("value").toString();
-          ui->comboBox->addItem(res1,res2);
-          ui->comboBox_2->addItem(res1,res2);
-      }
-    }
-    reply->deleteLater();
-}
-
-double huobi::calc() {
-    double val = ui->comboBox->currentData().toString().toDouble();
-    double a1 = ui->doubleSpinBox->value();
-
-    a1 = a1/val;
-
-    double val2 = ui->comboBox_2->currentData().toString().toDouble();
-
-    a1 = a1*val2;
-
-    ui->label_3->setText("1 中国人民币（CNY） = " + ui->comboBox->currentData().toString() + " " + ui->comboBox->currentText());
-    ui->label_4->setText("1 中国人民币（CNY） = " + ui->comboBox_2->currentData().toString() + " " + ui->comboBox_2->currentText());
-
-    return a1;
+    updateExchangeRates();
 }
 
 huobi::~huobi()
@@ -60,20 +38,51 @@ huobi::~huobi()
     delete ui;
 }
 
-
-
-
-void huobi::on_doubleSpinBox_valueChanged(const QString &arg1)
+void huobi::on_doubleSpinBox_valueChanged(const QString & /*arg1*/)
 {
     ui->doubleSpinBox_2->setValue(calc());
 }
 
-void huobi::on_comboBox_currentIndexChanged(int index)
+void huobi::on_comboBox_currentIndexChanged(int /*index*/)
 {
     ui->doubleSpinBox_2->setValue(calc());
 }
 
-void huobi::on_comboBox_2_currentIndexChanged(int index)
+void huobi::on_comboBox_2_currentIndexChanged(int /*index*/)
 {
     ui->doubleSpinBox_2->setValue(calc());
 }
+
+double huobi::calc() {
+    QString currencyFrom = ui->comboBox->currentText();
+    QString currencyTo = ui->comboBox_2->currentText();
+    double amount = ui->doubleSpinBox->value();
+
+    if (exchangeRates.contains(currencyFrom) && exchangeRates.contains(currencyTo)) {
+        double rateFrom = exchangeRates[currencyFrom];
+        double rateTo = exchangeRates[currencyTo];
+
+        double convertedAmount = (amount / rateFrom) * rateTo;
+
+        ui->label_3->setText("1 " + currencyFrom + " = " + QString::number(rateFrom, 'f', 4) + " CNY");
+        ui->label_4->setText("1 " + currencyTo + " = " + QString::number(rateTo, 'f', 4) + " CNY");
+
+        return convertedAmount;
+    }
+
+    return 0.0;
+}
+
+void huobi::updateExchangeRates() {
+    // This function should update exchange rates from an API or another source
+    // Here, we have static rates for demonstration
+    // In a real application, you'd update the exchangeRates map dynamically
+}
+
+
+
+void huobi::on_doubleSpinBox_textChanged(const QString &arg1)
+{
+    ui->doubleSpinBox_2->setValue(calc());
+}
+
