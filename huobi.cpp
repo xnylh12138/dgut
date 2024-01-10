@@ -53,6 +53,7 @@ void huobi::on_comboBox_2_currentIndexChanged(int /*index*/)
     ui->doubleSpinBox_2->setValue(calc());
 }
 
+
 double huobi::calc() {
     QString currencyFrom = ui->comboBox->currentText();
     QString currencyTo = ui->comboBox_2->currentText();
@@ -84,5 +85,18 @@ void huobi::updateExchangeRates() {
 void huobi::on_doubleSpinBox_textChanged(const QString &arg1)
 {
     ui->doubleSpinBox_2->setValue(calc());
+}
+
+
+
+void huobi::on_comboBox_activated(int index)
+{
+
+}
+
+
+void huobi::on_comboBox_2_activated(int index)
+{
+
 }
 

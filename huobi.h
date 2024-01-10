@@ -21,7 +21,14 @@ private slots:
     void on_comboBox_currentIndexChanged(int index);
     void on_comboBox_2_currentIndexChanged(int index);
 
+
     void on_doubleSpinBox_textChanged(const QString &arg1);
+
+
+    void on_comboBox_activated(int index);
+
+
+    void on_comboBox_2_activated(int index);
 
 private:
     Ui::huobi *ui;
